@@ -50,7 +50,7 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
     store.updateSiteConfig({ [e.target.name]: e.target.value });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'heroVideoUrl' | 'image', productId?: string) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'heroMediaUrl' | 'image', productId?: string) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
@@ -74,8 +74,8 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
       const data = await response.json();
       const downloadURL = data.secure_url;
       
-      if (field === 'heroVideoUrl') {
-        await store.updateSiteConfig({ heroVideoUrl: downloadURL });
+      if (field === 'heroMediaUrl') {
+        await store.updateSiteConfig({ heroMediaUrl: downloadURL });
       } else if (productId && editingProduct) {
         setEditingProduct({ ...editingProduct, image: downloadURL });
       }
@@ -380,21 +380,21 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                                                 <p className="text-[10px] text-stone-400">The first text visitors see. Keep it short and impactful.</p>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Video Background</label>
+                                                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Hero Background (Video or Image)</label>
                                                 <div className="flex gap-2">
                                                     <input 
-                                                        value={store.siteConfig.heroVideoUrl}
+                                                        value={store.siteConfig.heroMediaUrl || ''}
                                                         onChange={handleConfigChange}
-                                                        name="heroVideoUrl"
+                                                        name="heroMediaUrl"
                                                         className="flex-1 bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs font-mono text-stone-500 focus:border-champagne-500 outline-none" 
                                                         placeholder="https://..."
                                                     />
-                                                    <label className={`bg-stone-900 text-white px-4 rounded-lg flex items-center cursor-pointer hover:bg-stone-800 transition-all ${uploading === 'heroVideoUrl-config' ? 'opacity-50' : ''}`}>
-                                                        {uploading === 'heroVideoUrl-config' ? <Loader2 className="animate-spin" size={16}/> : <Upload size={16}/>}
-                                                        <input type="file" accept="video/mp4" className="hidden" onChange={(e) => handleFileUpload(e, 'heroVideoUrl')} />
+                                                    <label className={`bg-stone-900 text-white px-4 rounded-lg flex items-center cursor-pointer hover:bg-stone-800 transition-all ${uploading === 'heroMediaUrl-config' ? 'opacity-50' : ''}`}>
+                                                        {uploading === 'heroMediaUrl-config' ? <Loader2 className="animate-spin" size={16}/> : <Upload size={16}/>}
+                                                        <input type="file" accept="video/*,image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'heroMediaUrl')} />
                                                     </label>
                                                 </div>
-                                                <p className="text-[10px] text-stone-400">Recommended: 1080p MP4, muted, under 10MB.</p>
+                                                <p className="text-[10px] text-stone-400">Supports MP4, JPG, PNG. Max 10MB recommended.</p>
                                             </div>
                                         </div>
                                         <div className="space-y-2">

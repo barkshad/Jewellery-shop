@@ -17,7 +17,7 @@ export interface SiteConfig {
   heroTitle: string;
   heroSubtitle: string;
   heroButtonText: string;
-  heroVideoUrl: string; // New field for video background
+  heroMediaUrl: string; // New field for video or image background
   aboutTitle: string;
   aboutText: string;
   contactEmail: string;

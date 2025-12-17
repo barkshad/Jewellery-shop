@@ -39,6 +39,12 @@ export const Home: React.FC<HomeProps> = ({ store }) => {
   const yHeroText = useTransform(scrollY, [0, 500], [0, 200]);
   const opacityHero = useTransform(scrollY, [0, 400], [1, 0]);
 
+  // Helper to determine media type
+  const isVideo = (url: string) => {
+     if (!url) return false;
+     return url.includes('/video/') || url.match(/\.(mp4|webm|mov)$/i);
+  };
+
   return (
     <div className="w-full overflow-x-hidden bg-[#fcfcfc]">
       {/* Hero Section */}
@@ -47,7 +53,7 @@ export const Home: React.FC<HomeProps> = ({ store }) => {
         {/* Floating Particles for Atmosphere */}
         <FloatingParticles count={30} />
 
-        {/* VIDEO BACKGROUND with Parallax */}
+        {/* BACKGROUND MEDIA with Parallax */}
         <motion.div 
             className="absolute inset-0 z-0"
             style={{ y: useTransform(scrollY, [0, 1000], [0, 400]) }} // Slow scrolling background
@@ -55,16 +61,25 @@ export const Home: React.FC<HomeProps> = ({ store }) => {
           <div className="absolute inset-0 bg-black/40 z-10 mix-blend-multiply" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0c0a09] via-transparent to-[#0c0a09]/30 z-10" />
           
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            className="w-full h-full object-cover opacity-80 scale-110" 
-            key={siteConfig.heroVideoUrl}
-          >
-            <source src={siteConfig.heroVideoUrl} type="video/mp4" />
-          </video>
+          {isVideo(siteConfig.heroMediaUrl) ? (
+            <video 
+                autoPlay 
+                loop 
+                muted 
+                playsInline 
+                className="w-full h-full object-cover opacity-80 scale-110" 
+                key={siteConfig.heroMediaUrl}
+            >
+                <source src={siteConfig.heroMediaUrl} type="video/mp4" />
+            </video>
+          ) : (
+            <img 
+                src={siteConfig.heroMediaUrl} 
+                alt="Hero Background" 
+                className="w-full h-full object-cover opacity-80 scale-110"
+                key={siteConfig.heroMediaUrl}
+            />
+          )}
         </motion.div>
 
         <motion.div 
