@@ -63,6 +63,8 @@ export const INITIAL_SITE_CONFIG: SiteConfig = {
   heroTitle: "The Heart of Kenyan Luxury",
   heroSubtitle: "From the depths of the Rift Valley to the atelier in Nairobi. Rare gemstones, architectural precision, eternal brilliance.",
   heroButtonText: "Explore the Collection",
+  // A high-quality placeholder video (Abstract Gold/Dark)
+  heroVideoUrl: "https://videos.pexels.com/video-files/4930366/4930366-hd_1920_1080_30fps.mp4",
   aboutTitle: "Forged in the Rift, Worn by the World",
   aboutText: "Every piece begins as a sketch in our Westlands studio. We source Tsavorite from Taita, Sapphires from Turkana, and Gold from the heart of the land. It takes over 200 hours of masterful precision to transform raw earth into the artifacts you see today.",
   contactEmail: "concierge@aurum.co.ke",

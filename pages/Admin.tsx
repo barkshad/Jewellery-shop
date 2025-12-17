@@ -156,7 +156,7 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                                 className="w-full bg-white/50 border border-stone-200 p-3 focus:outline-none focus:border-champagne-500 font-serif text-lg" 
                             />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <label className="text-xs uppercase tracking-widest text-stone-500">Hero Subtitle</label>
                             <textarea 
                                 name="heroSubtitle"
@@ -166,6 +166,17 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                                 className="w-full bg-white/50 border border-stone-200 p-3 focus:outline-none focus:border-champagne-500" 
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs uppercase tracking-widest text-stone-500">Hero Video URL (.mp4)</label>
+                        <input 
+                            name="heroVideoUrl"
+                            value={store.siteConfig.heroVideoUrl}
+                            onChange={handleConfigChange}
+                            placeholder="https://..."
+                            className="w-full bg-white/50 border border-stone-200 p-3 focus:outline-none focus:border-champagne-500 font-mono text-xs" 
+                        />
                     </div>
 
                     <div className="space-y-2">

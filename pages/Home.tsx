@@ -1,10 +1,33 @@
 import React from 'react';
-import { ArrowRight, Star, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Star, MapPin, ShieldCheck, Play } from 'lucide-react';
 import { ViewContextType } from '../types';
 
 interface HomeProps {
   store: ViewContextType;
 }
+
+// Helper component for the crazy animation
+const ForgedText: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => {
+  return (
+    <span className={`inline-flex flex-wrap justify-center gap-x-[0.2em] ${className}`}>
+      {text.split(" ").map((word, wordIndex) => (
+        <span key={wordIndex} className="inline-flex whitespace-nowrap">
+          {word.split("").map((char, charIndex) => (
+            <span
+              key={`${wordIndex}-${charIndex}`}
+              className="animate-forge"
+              style={{ 
+                animationDelay: `${150 + (wordIndex * 200) + (charIndex * 50)}ms` 
+              }}
+            >
+              {char}
+            </span>
+          ))}
+        </span>
+      ))}
+    </span>
+  );
+};
 
 export const Home: React.FC<HomeProps> = ({ store }) => {
   const { products, siteConfig } = store;
@@ -12,29 +35,42 @@ export const Home: React.FC<HomeProps> = ({ store }) => {
   return (
     <div className="animate-enter w-full overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-stone-100">
-        {/* Dynamic Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-stone-50 to-champagne-100/50 z-0" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] z-0"></div>
+      <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-stone-900">
         
-        {/* Animated Orbs */}
-        <div className="absolute top-1/4 right-0 w-[40rem] h-[40rem] bg-champagne-300/20 rounded-full blur-[100px] animate-float delay-100 mix-blend-multiply" />
-        <div className="absolute bottom-0 left-0 w-[50rem] h-[50rem] bg-stone-300/20 rounded-full blur-[120px] animate-float delay-300 mix-blend-multiply" />
+        {/* VIDEO BACKGROUND */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-black/40 z-10" /> {/* Overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-stone-900/50 z-10" />
+          
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover opacity-90"
+            key={siteConfig.heroVideoUrl} // Key forces reload if URL changes in Admin
+          >
+            <source src={siteConfig.heroVideoUrl} type="video/mp4" />
+          </video>
+        </div>
 
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto space-y-10">
-          <span className="inline-block text-xs md:text-sm uppercase tracking-[0.4em] text-stone-500 animate-enter delay-100 border-b border-stone-300 pb-2">
+        <div className="relative z-20 text-center px-6 max-w-6xl mx-auto space-y-10">
+          <span className="inline-block text-xs md:text-sm uppercase tracking-[0.4em] text-champagne-200 animate-enter delay-100 border-b border-champagne-400/50 pb-2 drop-shadow-md">
             Nairobi • Paris • New York
           </span>
-          <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl text-charcoal leading-[0.85] animate-enter delay-200">
-             {siteConfig.heroTitle}
+          
+          <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl text-white leading-[0.85] drop-shadow-2xl">
+             <ForgedText text={siteConfig.heroTitle} />
           </h1>
-          <p className="font-light text-stone-600 text-lg md:text-2xl max-w-xl mx-auto leading-relaxed animate-enter delay-300">
+          
+          <p className="font-light text-champagne-50/90 text-lg md:text-2xl max-w-xl mx-auto leading-relaxed animate-enter delay-[2000ms] drop-shadow-md">
             {siteConfig.heroSubtitle}
           </p>
-          <div className="pt-10 animate-enter delay-300">
+          
+          <div className="pt-10 animate-enter delay-[2200ms]">
             <button 
               onClick={() => store.setView('SHOP')}
-              className="group relative inline-flex items-center gap-4 px-10 py-5 bg-charcoal text-white hover:bg-stone-800 transition-all duration-500 ease-luxury shadow-lg hover:shadow-xl hover:-translate-y-1"
+              className="group relative inline-flex items-center gap-4 px-10 py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-champagne-500 hover:border-champagne-500 hover:text-white transition-all duration-500 ease-luxury shadow-lg hover:shadow-[0_0_30px_rgba(198,149,98,0.5)]"
             >
               <span className="uppercase tracking-[0.2em] text-xs font-bold">{siteConfig.heroButtonText}</span>
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

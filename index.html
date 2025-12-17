@@ -65,7 +65,7 @@
         border-radius: 3px;
       }
 
-      /* Utility for glass effects that Tailwind backdrop-blur sometimes misses in complex stacking */
+      /* Utility for glass effects */
       .glass {
         background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(24px);
@@ -92,12 +92,41 @@
         100% { opacity: 1; transform: scale(1) translateY(0); }
       }
 
+      /* THE CRAZY FORGE ANIMATION */
+      /* This makes letters look like they are spinning rings cooling into text */
+      @keyframes forgeMetal {
+        0% {
+          transform: rotateX(90deg) rotateY(180deg) scale(3) translateY(50px);
+          opacity: 0;
+          filter: blur(20px) brightness(3) drop-shadow(0 0 20px #c69562);
+          color: #fff; /* White hot */
+        }
+        40% {
+           opacity: 1;
+           transform: rotateX(45deg) rotateY(90deg) scale(1.5);
+           filter: blur(8px) brightness(2);
+           color: #e3ccaa; /* Gold hot */
+        }
+        100% {
+          transform: rotateX(0) rotateY(0) scale(1) translateY(0);
+          opacity: 1;
+          filter: blur(0) brightness(1);
+          color: currentColor; /* Settled color */
+        }
+      }
+
       .animate-float {
         animation: float 6s ease-in-out infinite;
       }
       
       .animate-enter {
         animation: fadeInScale 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+      }
+
+      .animate-forge {
+        display: inline-block;
+        animation: forgeMetal 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        transform-style: preserve-3d;
       }
 
       .delay-100 { animation-delay: 100ms; }
