@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ViewState, CartItem, Product, ViewContextType, SiteConfig } from './types';
 import { Layout } from './components/Layout';
 import { CartSidebar } from './components/CartSidebar';
@@ -7,6 +7,9 @@ import { Shop } from './pages/Shop';
 import { ProductDetail } from './pages/ProductDetail';
 import { Admin } from './pages/Admin';
 import { INITIAL_PRODUCTS, INITIAL_SITE_CONFIG } from './constants';
+import { db } from './firebase';
+import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, addDoc } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
@@ -15,8 +18,53 @@ const App: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   // CMS State
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(INITIAL_SITE_CONFIG);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Firestore Real-time Listeners
+  useEffect(() => {
+    if (!db) {
+      console.warn("Firestore not initialized. Using initial static data.");
+      setProducts(INITIAL_PRODUCTS);
+      setIsLoading(false);
+      return;
+    }
+
+    // 1. Listen to Products
+    const unsubscribeProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
+      const fetchedProducts: Product[] = [];
+      snapshot.forEach((doc) => {
+        fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
+      });
+      // If DB is empty, we might want to seed it, but for now just show empty or seeded
+      if (fetchedProducts.length === 0 && products.length === 0) {
+         // Optional: Seed DB here if needed, or just let Admin add products
+      }
+      setProducts(fetchedProducts);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching products:", error);
+      setIsLoading(false);
+    });
+
+    // 2. Listen to Site Config
+    const unsubscribeConfig = onSnapshot(doc(db, 'settings', 'main'), (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        setSiteConfig(docSnapshot.data() as SiteConfig);
+      } else {
+        // Create default config if it doesn't exist
+        setDoc(doc(db, 'settings', 'main'), INITIAL_SITE_CONFIG);
+      }
+    }, (error) => {
+      console.error("Error fetching config:", error);
+    });
+
+    return () => {
+      unsubscribeProducts();
+      unsubscribeConfig();
+    };
+  }, []);
 
   // Store actions
   const addToCart = (product: Product) => {
@@ -48,21 +96,47 @@ const App: React.FC = () => {
     setCurrentView(view);
   };
 
-  // CMS Actions
-  const addProduct = (product: Product) => {
-    setProducts(prev => [product, ...prev]);
+  // CMS Actions (Firestore Connected)
+  const addProduct = async (product: Product) => {
+    if (!db) return;
+    try {
+      // Create a clean object without the ID (Firestore creates ID)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...productData } = product;
+      await addDoc(collection(db, 'products'), productData);
+    } catch (e) {
+      console.error("Error adding product: ", e);
+      alert("Failed to save product to database.");
+    }
   };
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    if (!db) return;
+    try {
+      const productRef = doc(db, 'products', id);
+      await updateDoc(productRef, updates);
+    } catch (e) {
+      console.error("Error updating product: ", e);
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  const deleteProduct = async (id: string) => {
+    if (!db) return;
+    try {
+      await deleteDoc(doc(db, 'products', id));
+    } catch (e) {
+      console.error("Error deleting product: ", e);
+    }
   };
 
-  const updateSiteConfig = (updates: Partial<SiteConfig>) => {
-    setSiteConfig(prev => ({ ...prev, ...updates }));
+  const updateSiteConfig = async (updates: Partial<SiteConfig>) => {
+    if (!db) return;
+    try {
+      const configRef = doc(db, 'settings', 'main');
+      await updateDoc(configRef, updates);
+    } catch (e) {
+      console.error("Error updating config: ", e);
+    }
   };
 
   const store: ViewContextType = {
@@ -80,11 +154,23 @@ const App: React.FC = () => {
     updateProduct,
     deleteProduct,
     siteConfig,
-    updateSiteConfig
+    updateSiteConfig,
+    isLoading
   };
 
   // Basic Routing Logic
   const renderView = () => {
+    if (isLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-stone-50">
+           <div className="flex flex-col items-center gap-4">
+              <Loader2 className="animate-spin text-champagne-600" size={32} />
+              <span className="text-xs uppercase tracking-widest text-stone-500">Loading Maison...</span>
+           </div>
+        </div>
+      );
+    }
+
     switch (currentView) {
       case 'HOME':
         return <Home store={store} />;

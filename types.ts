@@ -42,10 +42,12 @@ export interface ViewContextType {
   
   // CMS & Data
   products: Product[];
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (product: Product) => Promise<void>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
   
   siteConfig: SiteConfig;
-  updateSiteConfig: (updates: Partial<SiteConfig>) => void;
+  updateSiteConfig: (updates: Partial<SiteConfig>) => Promise<void>;
+  
+  isLoading: boolean;
 }

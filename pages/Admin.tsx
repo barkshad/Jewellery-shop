@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { ViewContextType, Product } from '../types';
 import { ADMIN_STATS_DATA } from '../constants';
-import { Package, DollarSign, Users, TrendingUp, Edit, Trash2, Plus, Save } from 'lucide-react';
+import { Package, DollarSign, Users, TrendingUp, Edit, Trash2, Plus, Save, Upload, Loader2 } from 'lucide-react';
 
 interface AdminProps {
   store: ViewContextType;
@@ -12,6 +12,8 @@ type AdminTab = 'DASHBOARD' | 'CMS_CONTENT' | 'CMS_PRODUCTS';
 
 export const Admin: React.FC<AdminProps> = ({ store }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('DASHBOARD');
+  const [uploading, setUploading] = useState<string | null>(null); // 'heroVideo' | 'productImage' | null
+  const [saving, setSaving] = useState(false);
   
   // Local state for editing products to avoid instant re-renders on every keystroke
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -22,6 +24,46 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
     store.updateSiteConfig({ [e.target.name]: e.target.value });
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'heroVideoUrl' | 'image', productId?: string) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const uploadId = productId || 'config';
+    setUploading(`${field}-${uploadId}`);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'qqk2urzm');
+      
+      const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+      
+      const response = await fetch(`https://api.cloudinary.com/v1_1/ds2mbrzcn/${resourceType}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+          throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const downloadURL = data.secure_url;
+      
+      // Update State
+      if (field === 'heroVideoUrl') {
+        await store.updateSiteConfig({ heroVideoUrl: downloadURL });
+      } else if (productId && editingProduct) {
+        setEditingProduct({ ...editingProduct, image: downloadURL });
+      }
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert("Upload failed. Please try again.");
+    } finally {
+      setUploading(null);
+    }
+  };
+
   // Handlers for Product Editing
   const handleEditProduct = (product: Product) => {
     setEditingProduct({ ...product });
@@ -30,7 +72,7 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
 
   const handleCreateProduct = () => {
     setEditingProduct({
-      id: Math.random().toString(36).substr(2, 9),
+      id: 'temp-' + Math.random().toString(36).substr(2, 9),
       name: '',
       price: 0,
       category: 'Rings',
@@ -42,15 +84,29 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
     setIsNewProduct(true);
   };
 
-  const saveProduct = () => {
+  const saveProduct = async () => {
     if (!editingProduct) return;
-    if (isNewProduct) {
-      store.addProduct(editingProduct);
-    } else {
-      store.updateProduct(editingProduct.id, editingProduct);
+    setSaving(true);
+    try {
+      if (isNewProduct) {
+        await store.addProduct(editingProduct);
+      } else {
+        await store.updateProduct(editingProduct.id, editingProduct);
+      }
+      setEditingProduct(null);
+    } catch (e) {
+      console.error("Save failed", e);
+    } finally {
+      setSaving(false);
     }
-    setEditingProduct(null);
   };
+  
+  const handleDeleteProduct = async (id: string) => {
+     if(window.confirm("Are you sure you want to delete this product?")) {
+         await store.deleteProduct(id);
+         if(editingProduct?.id === id) setEditingProduct(null);
+     }
+  }
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!editingProduct) return;
@@ -168,15 +224,35 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-stone-500">Hero Video URL (.mp4)</label>
-                        <input 
-                            name="heroVideoUrl"
-                            value={store.siteConfig.heroVideoUrl}
-                            onChange={handleConfigChange}
-                            placeholder="https://..."
-                            className="w-full bg-white/50 border border-stone-200 p-3 focus:outline-none focus:border-champagne-500 font-mono text-xs" 
-                        />
+                    <div className="space-y-2 bg-white/50 p-4 border border-stone-200 rounded-sm">
+                        <label className="text-xs uppercase tracking-widest text-stone-500 block mb-2">Hero Video Background</label>
+                        
+                        <div className="flex items-center gap-4">
+                            <input 
+                                type="text"
+                                name="heroVideoUrl"
+                                value={store.siteConfig.heroVideoUrl}
+                                onChange={handleConfigChange}
+                                placeholder="https://..."
+                                className="flex-1 bg-white border border-stone-200 p-3 focus:outline-none focus:border-champagne-500 font-mono text-xs" 
+                            />
+                            
+                            <label className={`flex items-center gap-2 px-4 py-3 bg-stone-900 text-white cursor-pointer hover:bg-stone-800 transition-colors ${uploading === 'heroVideoUrl-config' ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {uploading === 'heroVideoUrl-config' ? (
+                                    <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                    <Upload size={16} />
+                                )}
+                                <span className="text-xs uppercase tracking-widest">Upload Video</span>
+                                <input 
+                                    type="file" 
+                                    accept="video/mp4" 
+                                    className="hidden" 
+                                    onChange={(e) => handleFileUpload(e, 'heroVideoUrl')} 
+                                />
+                            </label>
+                        </div>
+                        <p className="text-[10px] text-stone-400 mt-2">Recommended: 1080p MP4, under 10MB.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -257,7 +333,7 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                         <div className="space-y-6">
                              <div className="flex justify-between items-center border-b border-stone-200 pb-4">
                                 <h3 className="font-serif text-2xl">{isNewProduct ? 'Add New Product' : 'Edit Product'}</h3>
-                                <button onClick={() => store.deleteProduct(editingProduct.id)} className="text-red-500 text-xs uppercase tracking-widest hover:text-red-700 flex items-center gap-2">
+                                <button onClick={() => handleDeleteProduct(editingProduct.id)} className="text-red-500 text-xs uppercase tracking-widest hover:text-red-700 flex items-center gap-2">
                                     <Trash2 size={14} /> Delete
                                 </button>
                             </div>
@@ -300,14 +376,35 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                                 </select>
                             </div>
 
-                             <div className="space-y-2">
-                                <label className="text-xs uppercase tracking-widest text-stone-500">Image URL</label>
-                                <input 
-                                    name="image"
-                                    value={editingProduct.image}
-                                    onChange={handleProductChange}
-                                    className="w-full bg-white/50 border border-stone-200 p-3 focus:outline-none focus:border-champagne-500 text-sm font-mono" 
-                                />
+                            <div className="space-y-2 bg-white/50 p-4 border border-stone-200 rounded-sm">
+                                <label className="text-xs uppercase tracking-widest text-stone-500 block mb-2">Product Image</label>
+                                <div className="flex gap-4 items-start">
+                                    <img src={editingProduct.image} className="w-16 h-16 object-cover bg-stone-200" alt="Preview" />
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                             <input 
+                                                name="image"
+                                                value={editingProduct.image}
+                                                onChange={handleProductChange}
+                                                className="w-full bg-white border border-stone-200 p-2 text-xs font-mono focus:outline-none focus:border-champagne-500" 
+                                            />
+                                             <label className={`flex items-center gap-2 px-3 py-2 bg-stone-900 text-white cursor-pointer hover:bg-stone-800 transition-colors ${uploading === `image-${editingProduct.id}` ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                {uploading === `image-${editingProduct.id}` ? (
+                                                    <Loader2 size={12} className="animate-spin" />
+                                                ) : (
+                                                    <Upload size={12} />
+                                                )}
+                                                <span className="text-[10px] uppercase tracking-widest whitespace-nowrap">Upload</span>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    className="hidden" 
+                                                    onChange={(e) => handleFileUpload(e, 'image', editingProduct.id)} 
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                              <div className="space-y-2">
@@ -334,9 +431,11 @@ export const Admin: React.FC<AdminProps> = ({ store }) => {
                             <div className="pt-6">
                                 <button 
                                     onClick={saveProduct}
-                                    className="w-full bg-stone-900 text-white py-4 uppercase tracking-[0.2em] hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                                    disabled={saving}
+                                    className="w-full bg-stone-900 text-white py-4 uppercase tracking-[0.2em] hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
-                                    <Save size={18} /> Save Changes
+                                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} 
+                                    {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
 
