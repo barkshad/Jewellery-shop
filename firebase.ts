@@ -13,15 +13,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// We wrap this in a try-catch to avoid crashing if config is invalid during development
 let app;
 let db;
 
 try {
-  app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
+  // Check if config is still placeholder
+  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+    console.warn("⚠️ Firebase Config is missing. App is running in STATIC MODE.");
+    console.warn("⚠️ To enable Admin/CMS, update firebase.ts with your keys.");
+  } else {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+  }
 } catch (error) {
-  console.warn("Firebase initialization failed. Check your configuration in firebase.ts");
+  console.warn("Firebase initialization failed. Check your configuration in firebase.ts", error);
 }
 
 export { db };
