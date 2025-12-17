@@ -43,9 +43,23 @@
     </script>
     <style>
       body {
-        background-color: #fcfcfc;
+        background-color: #0c0a09; /* Darker base for gold pop */
         color: #1a1a1a;
         overflow-x: hidden;
+      }
+
+      /* Global Grain Texture */
+      .bg-grain {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.04;
+        background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+        mix-blend-mode: overlay;
       }
       
       /* Smooth Scrolling */
@@ -53,31 +67,99 @@
         scroll-behavior: smooth;
       }
 
-      /* Custom Scrollbar for Webkit */
+      /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: transparent;
+        background: #1c1917;
       }
       ::-webkit-scrollbar-thumb {
-        background: #d5b083;
+        background: linear-gradient(to bottom, #d5b083, #8c6a48);
         border-radius: 3px;
       }
 
       /* Utility for glass effects */
       .glass {
-        background: rgba(255, 255, 255, 0.65);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-bottom: 1px solid rgba(213, 176, 131, 0.2);
       }
       
       .glass-dark {
-        background: rgba(20, 20, 20, 0.6);
+        background: rgba(20, 20, 20, 0.7);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* --- LIQUID GOLD & SILVER ANIMATIONS --- */
+      
+      @keyframes shine-flow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      .text-liquid-gold {
+        background: linear-gradient(
+          to right, 
+          #bf953f 0%, 
+          #fcf6ba 20%, 
+          #b38728 40%, 
+          #fbf5b7 60%, 
+          #aa771c 80%, 
+          #bf953f 100%
+        );
+        background-size: 200% auto;
+        color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shine-flow 4s linear infinite;
+        text-shadow: 0px 0px 20px rgba(191, 149, 63, 0.2);
+      }
+
+      .text-liquid-silver {
+        background: linear-gradient(
+          to right, 
+          #C0C0C0 0%, 
+          #ffffff 20%, 
+          #8a8a8a 40%, 
+          #e6e6e6 60%, 
+          #C0C0C0 100%
+        );
+        background-size: 200% auto;
+        color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shine-flow 5s linear infinite;
+      }
+
+      /* Metallic Sheen for Buttons/Cards */
+      .metallic-sheen {
+        position: relative;
+        overflow: hidden;
+      }
+      .metallic-sheen::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg, 
+          transparent, 
+          rgba(255, 255, 255, 0.6), 
+          transparent
+        );
+        transform: skewX(-20deg);
+        transition: left 0.5s ease-in-out;
+      }
+      .metallic-sheen:hover::after {
+        left: 150%;
+        transition: left 0.7s cubic-bezier(0.19, 1, 0.22, 1);
       }
 
       /* Animations */
@@ -87,51 +169,35 @@
         100% { transform: translateY(0px); }
       }
       
-      @keyframes fadeInScale {
-        0% { opacity: 0; transform: scale(0.98) translateY(20px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
-      }
-
-      /* THE CRAZY FORGE ANIMATION */
-      /* This makes letters look like they are spinning rings cooling into text */
       @keyframes forgeMetal {
         0% {
           transform: rotateX(90deg) rotateY(180deg) scale(3) translateY(50px);
           opacity: 0;
           filter: blur(20px) brightness(3) drop-shadow(0 0 20px #c69562);
-          color: #fff; /* White hot */
+          color: #fff; 
         }
         40% {
            opacity: 1;
            transform: rotateX(45deg) rotateY(90deg) scale(1.5);
            filter: blur(8px) brightness(2);
-           color: #e3ccaa; /* Gold hot */
+           color: #e3ccaa; 
         }
         100% {
           transform: rotateX(0) rotateY(0) scale(1) translateY(0);
           opacity: 1;
           filter: blur(0) brightness(1);
-          color: currentColor; /* Settled color */
+          color: currentColor; 
         }
       }
 
       .animate-float {
         animation: float 6s ease-in-out infinite;
       }
-      
-      .animate-enter {
-        animation: fadeInScale 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-      }
-
       .animate-forge {
         display: inline-block;
         animation: forgeMetal 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         transform-style: preserve-3d;
       }
-
-      .delay-100 { animation-delay: 100ms; }
-      .delay-200 { animation-delay: 200ms; }
-      .delay-300 { animation-delay: 300ms; }
     </style>
   <script type="importmap">
 {
@@ -145,17 +211,18 @@
     "firebase/app": "https://esm.sh/firebase@10.8.0/app",
     "firebase/firestore": "https://esm.sh/firebase@10.8.0/firestore",
     "framer-motion": "https://esm.sh/framer-motion@10.18.0?external=react,react-dom",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "firebase/": "https://esm.sh/firebase@^12.7.0/",
-    "vite": "https://esm.sh/vite@^7.3.0"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
 </head>
   <body>
     <div id="root"></div>
+    <div class="bg-grain"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

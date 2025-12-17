@@ -22,9 +22,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, store }) => {
   const totalItems = store.cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-champagne-50/30 font-sans text-charcoal selection:bg-champagne-200">
+    <div className="min-h-screen flex flex-col bg-[#fcfcfc] font-sans text-charcoal selection:bg-champagne-200 selection:text-charcoal relative">
+      
       {/* Announcement Bar */}
-      <div className="bg-stone-900 text-champagne-300 text-[10px] md:text-xs uppercase tracking-widest text-center py-2 z-[60] relative">
+      <div className="bg-[#121212] text-champagne-300 text-[10px] md:text-xs uppercase tracking-widest text-center py-2 z-[60] relative">
         {store.siteConfig.announcementBar}
       </div>
 
@@ -49,36 +50,36 @@ export const Layout: React.FC<LayoutProps> = ({ children, store }) => {
             className="flex-1 md:flex-none text-center md:text-left cursor-pointer group"
             onClick={() => store.setView('HOME')}
           >
-            <h1 className="font-serif text-2xl md:text-3xl tracking-[0.2em] font-medium group-hover:opacity-70 transition-opacity duration-500">
+            <h1 className="font-serif text-2xl md:text-3xl tracking-[0.25em] font-medium group-hover:opacity-80 transition-opacity duration-500 text-liquid-gold">
               AURUM
             </h1>
           </div>
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-12 text-sm tracking-widest uppercase font-medium text-charcoal/70">
-            <button onClick={() => store.setView('HOME')} className="hover:text-champagne-700 transition-colors">Home</button>
-            <button onClick={() => store.setView('SHOP')} className="hover:text-champagne-700 transition-colors">Collections</button>
-            <button onClick={() => store.setView('ABOUT')} className="hover:text-champagne-700 transition-colors">Maison</button>
+            <button onClick={() => store.setView('HOME')} className="hover:text-champagne-600 transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-champagne-600 after:transition-all hover:after:w-full">Home</button>
+            <button onClick={() => store.setView('SHOP')} className="hover:text-champagne-600 transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-champagne-600 after:transition-all hover:after:w-full">Collections</button>
+            <button onClick={() => store.setView('ABOUT')} className="hover:text-champagne-600 transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-champagne-600 after:transition-all hover:after:w-full">Maison</button>
           </div>
 
           {/* Icons */}
           <div className="flex items-center gap-6 text-charcoal/80">
-            <button className="hidden md:block hover:scale-110 transition-transform duration-500 ease-luxury">
+            <button className="hidden md:block hover:scale-110 transition-transform duration-500 ease-luxury hover:text-champagne-600">
               <Search size={20} strokeWidth={1.5} />
             </button>
              <button 
-              className="hidden md:block hover:scale-110 transition-transform duration-500 ease-luxury"
-              onClick={() => store.setView('ADMIN')} // User/Account normally, but kept as route
+              className="hidden md:block hover:scale-110 transition-transform duration-500 ease-luxury hover:text-champagne-600"
+              onClick={() => store.setView('ADMIN')}
              >
               <User size={20} strokeWidth={1.5} />
             </button>
             <button 
-              className="relative hover:scale-110 transition-transform duration-500 ease-luxury"
+              className="relative hover:scale-110 transition-transform duration-500 ease-luxury hover:text-champagne-600"
               onClick={store.toggleCartDrawer}
             >
               <ShoppingBag size={20} strokeWidth={1.5} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-champagne-600 text-[10px] text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-champagne-500 to-champagne-700 text-[10px] text-white shadow-lg animate-pulse">
                   {totalItems}
                 </span>
               )}
@@ -107,60 +108,67 @@ export const Layout: React.FC<LayoutProps> = ({ children, store }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-stone-900 text-stone-400 py-20 px-6 relative overflow-hidden">
+      <footer className="bg-[#0a0a0a] text-stone-400 py-20 px-6 relative overflow-hidden">
         {/* Decorative background pattern */}
         <div className="absolute top-0 right-0 opacity-5 pointer-events-none">
            <svg width="400" height="400" viewBox="0 0 100 100">
-              <path d="M0 0 L100 0 L50 100 Z" fill="white" />
+              <path d="M0 0 L100 0 L50 100 Z" fill="url(#goldGradient)" />
+              <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#bf953f" />
+                  <stop offset="100%" stopColor="#b38728" />
+                </linearGradient>
+              </defs>
            </svg>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
           <div className="space-y-6">
-            <h2 className="font-serif text-2xl text-white tracking-[0.2em]">AURUM</h2>
-            <p className="font-light text-sm leading-relaxed max-w-xs">
+            <h2 className="font-serif text-2xl text-liquid-gold tracking-[0.2em]">AURUM</h2>
+            <p className="font-light text-sm leading-relaxed max-w-xs text-stone-500">
               Born in Nairobi. <br/>
               Defining African luxury through architectural precision and indigenous materials.
             </p>
           </div>
           
           <div className="space-y-6">
-            <h3 className="text-white text-xs uppercase tracking-[0.2em]">Collections</h3>
+            <h3 className="text-white text-xs uppercase tracking-[0.2em] border-b border-white/10 pb-2 inline-block">Collections</h3>
             <ul className="space-y-3 font-light text-sm">
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>High Jewellery</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Bridal</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Timepieces</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Gifts</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>High Jewellery</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Bridal</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Timepieces</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors" onClick={() => store.setView('SHOP')}>Gifts</li>
             </ul>
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-white text-xs uppercase tracking-[0.2em]">Maison</h3>
+            <h3 className="text-white text-xs uppercase tracking-[0.2em] border-b border-white/10 pb-2 inline-block">Maison</h3>
             <ul className="space-y-3 font-light text-sm">
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors">Our Heritage</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors">Sustainability</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors">Careers</li>
-              <li className="hover:text-champagne-400 cursor-pointer transition-colors">Contact</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors">Our Heritage</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors">Sustainability</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors">Careers</li>
+              <li className="hover:text-liquid-gold cursor-pointer transition-colors">Contact</li>
             </ul>
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-white text-xs uppercase tracking-[0.2em]">Newsletter</h3>
-            <div className="flex border-b border-white/20 pb-2">
+            <h3 className="text-white text-xs uppercase tracking-[0.2em] border-b border-white/10 pb-2 inline-block">Newsletter</h3>
+            <div className="flex border-b border-white/20 pb-2 relative group">
               <input 
                 type="email" 
                 placeholder="Email Address" 
                 className="bg-transparent w-full outline-none text-white placeholder-stone-600 font-light"
               />
-              <button className="text-xs uppercase tracking-widest hover:text-champagne-400 transition-colors">Join</button>
+              <button className="text-xs uppercase tracking-widest text-stone-500 group-hover:text-champagne-400 transition-colors">Join</button>
+              <div className="absolute bottom-[-1px] left-0 w-0 h-[1px] bg-champagne-500 transition-all duration-500 group-hover:w-full"></div>
             </div>
             <div className="flex items-center gap-2 text-xs font-light pt-4">
-              <ShieldCheck size={14} />
+              <ShieldCheck size={14} className="text-champagne-600"/>
               <span>Secure global shipping</span>
             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs font-light">
+        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-xs font-light text-stone-600">
           <p>© 2024 AURUM Kenya. All rights reserved.</p>
           
           {/* Admin Button at Footer */}

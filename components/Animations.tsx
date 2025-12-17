@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
+import React, { useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform, useSpring, useInView, useMotionValue } from 'framer-motion';
 
 // 1. Reveal on Scroll (Fade Up with spring)
 export const Reveal: React.FC<{ children: React.ReactNode; delay?: number; width?: "fit-content" | "100%" }> = ({ 
@@ -11,7 +11,7 @@ export const Reveal: React.FC<{ children: React.ReactNode; delay?: number; width
     const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
     
     return (
-        <div ref={ref} style={{ width, overflow: 'hidden' }}>
+        <div ref={ref} style={{ width, overflow: 'visible' }}>
             <motion.div
                 initial={{ opacity: 0, y: 75, rotateX: 10 }}
                 animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
@@ -134,5 +134,86 @@ export const StaggerItem: React.FC<{ children: React.ReactNode; className?: stri
         >
             {children}
         </motion.div>
+    );
+};
+
+// 5. 3D Tilt Card with Light Glare
+export const TiltCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className, onClick }) => {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const rotateX = useTransform(y, [-100, 100], [5, -5]); // Reduced rotation for subtlety
+    const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        x.set(e.clientX - centerX);
+        y.set(e.clientY - centerY);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    return (
+        <motion.div
+            style={{ 
+                rotateX, 
+                rotateY, 
+                perspective: 1000,
+                transformStyle: "preserve-3d" 
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onClick={onClick}
+            className={`relative ${className}`}
+        >
+            {children}
+            {/* Glossy Overlay controlled by mouse */}
+            <motion.div 
+                style={{ 
+                    x: useTransform(x, [-100, 100], [-50, 50]),
+                    y: useTransform(y, [-100, 100], [-50, 50]),
+                    opacity: useTransform(x, [-100, 0, 100], [0, 0.3, 0]),
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 60%)'
+                }}
+                className="absolute inset-0 pointer-events-none z-20 mix-blend-overlay"
+            />
+        </motion.div>
+    );
+};
+
+// 6. Floating Particles (Gold Dust)
+export const FloatingParticles: React.FC<{ count?: number }> = ({ count = 20 }) => {
+    const particles = Array.from({ length: count });
+
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {particles.map((_, i) => (
+                <motion.div
+                    key={i}
+                    initial={{
+                        x: Math.random() * 100 + "%",
+                        y: Math.random() * 100 + "%",
+                        opacity: 0,
+                        scale: 0
+                    }}
+                    animate={{
+                        y: [null, Math.random() * -100 + "%"],
+                        opacity: [0, 0.8, 0],
+                        scale: [0, Math.random() * 1.5 + 0.5, 0],
+                    }}
+                    transition={{
+                        duration: Math.random() * 10 + 10,
+                        repeat: Infinity,
+                        delay: Math.random() * 5,
+                        ease: "linear"
+                    }}
+                    className="absolute w-1 h-1 rounded-full bg-champagne-300 blur-[1px] shadow-[0_0_8px_rgba(191,149,63,0.8)]"
+                />
+            ))}
+        </div>
     );
 };
