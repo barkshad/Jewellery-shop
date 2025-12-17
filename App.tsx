@@ -10,6 +10,7 @@ import { INITIAL_PRODUCTS, INITIAL_SITE_CONFIG } from './constants';
 import { db } from './firebase';
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
@@ -37,10 +38,6 @@ const App: React.FC = () => {
       snapshot.forEach((doc) => {
         fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
       });
-      // If DB is empty, we might want to seed it, but for now just show empty or seeded
-      if (fetchedProducts.length === 0 && products.length === 0) {
-         // Optional: Seed DB here if needed, or just let Admin add products
-      }
       setProducts(fetchedProducts);
       setIsLoading(false);
     }, (error) => {
@@ -53,7 +50,6 @@ const App: React.FC = () => {
       if (docSnapshot.exists()) {
         setSiteConfig(docSnapshot.data() as SiteConfig);
       } else {
-        // Create default config if it doesn't exist
         setDoc(doc(db, 'settings', 'main'), INITIAL_SITE_CONFIG);
       }
     }, (error) => {
@@ -92,15 +88,14 @@ const App: React.FC = () => {
   };
 
   const setView = (view: ViewState) => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentView(view);
   };
 
-  // CMS Actions (Firestore Connected)
+  // CMS Actions
   const addProduct = async (product: Product) => {
     if (!db) return;
     try {
-      // Create a clean object without the ID (Firestore creates ID)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...productData } = product;
       await addDoc(collection(db, 'products'), productData);
@@ -158,49 +153,49 @@ const App: React.FC = () => {
     isLoading
   };
 
-  // Basic Routing Logic
-  const renderView = () => {
-    if (isLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-stone-50">
-           <div className="flex flex-col items-center gap-4">
-              <Loader2 className="animate-spin text-champagne-600" size={32} />
-              <span className="text-xs uppercase tracking-widest text-stone-500">Loading Maison...</span>
-           </div>
-        </div>
-      );
-    }
-
-    switch (currentView) {
-      case 'HOME':
-        return <Home store={store} />;
-      case 'SHOP':
-        return <Shop store={store} />;
-      case 'PRODUCT':
-        return <ProductDetail store={store} />;
-      case 'ADMIN':
-        return <Admin store={store} />;
-      case 'ABOUT':
-      case 'CHECKOUT':
-        return (
-          <div className="min-h-screen flex items-center justify-center animate-enter">
+  // Routing View
+  const ViewComponent = () => {
+     switch (currentView) {
+      case 'HOME': return <Home store={store} />;
+      case 'SHOP': return <Shop store={store} />;
+      case 'PRODUCT': return <ProductDetail store={store} />;
+      case 'ADMIN': return <Admin store={store} />;
+      default: return (
+          <div className="min-h-screen flex items-center justify-center">
             <div className="text-center p-6">
                <h1 className="font-serif text-4xl mb-4">Maison Nairobi</h1>
                <p className="text-stone-500 font-light mb-8 max-w-md mx-auto">
-                 We are currently upgrading our checkout experience to support M-PESA and international cards seamlessly.
+                 Checkout experience coming soon.
                </p>
                <button onClick={() => setView('HOME')} className="text-xs uppercase tracking-widest border-b border-charcoal">Return Home</button>
             </div>
           </div>
         );
-      default:
-        return <Home store={store} />;
     }
   };
 
   return (
     <Layout store={store}>
-      {renderView()}
+      {isLoading ? (
+         <div className="min-h-screen flex items-center justify-center bg-stone-50">
+           <div className="flex flex-col items-center gap-4">
+              <Loader2 className="animate-spin text-champagne-600" size={32} />
+              <span className="text-xs uppercase tracking-widest text-stone-500">Loading Maison...</span>
+           </div>
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
+            transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+          >
+             <ViewComponent />
+          </motion.div>
+        </AnimatePresence>
+      )}
       <CartSidebar store={store} />
     </Layout>
   );
